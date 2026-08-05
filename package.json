@@ -1,0 +1,69 @@
+{
+  "name": "editor-status",
+  "author": "lumine-code",
+  "version": "1.0.0",
+  "description": "Show the active file path, cursor position, and selection range in the status bar.",
+  "keywords": [
+    "cursor",
+    "position",
+    "filepath",
+    "indicator",
+    "path"
+  ],
+  "repository": "https://github.com/lumine-code/editor-status",
+  "bugs": {
+    "url": "https://github.com/lumine-code/editor-status/issues"
+  },
+  "license": "MIT",
+  "main": "./lib/main",
+  "engines": {
+    "lumine": "^1.0.0"
+  },
+  "scripts": {
+    "test": "lumine --test spec",
+    "lint": "eslint . --max-warnings 0",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "configSchema": {
+    "template": {
+      "title": "Template",
+      "description": "Select the information shown in the editor status tile. Choose `Custom` to use the template below, or `Hide` to hide the tile.",
+      "type": "string",
+      "enum": [
+        "Row and Column",
+        "Row and Column, Lines and Chars",
+        "With Selection",
+        "With Selection and Cursors",
+        "Custom",
+        "Hide"
+      ],
+      "default": "Row and Column, Lines and Chars"
+    },
+    "custom": {
+      "title": "Custom Template",
+      "description": "Liquid template used when `Template` is `Custom`. Variables: `start.row`, `start.col` (where the selection begins, or the cursor when nothing is selected), `end.row`, `end.col` (where the cursor is; equals `start` with no selection), `lines`, `chars` (selected line and character counts), and `n` (number of cursors). `start` and `end` follow the selection's direction. Supports tags such as `{% if chars %}-{{ end.row }}:{{ end.col }}{% endif %}`.",
+      "type": "string",
+      "default": "{{ start.row }}:{{ start.col }}{% if chars %}-{{ end.row }}:{{ end.col }}{% endif %}{% if n > 1 %} #{{ n }}{% endif %}"
+    }
+  },
+  "consumedServices": {
+    "status-bar": {
+      "versions": {
+        "^1.0.0": "consumeStatusBar"
+      }
+    }
+  },
+  "dependencies": {
+    "@lumine-code/fs-plus": "https://github.com/lumine-code/fs-plus.git#742e3e166f56261189ff245a63967b8f1970fadd",
+    "liquidjs": "^10.27.2"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.8.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-n": "^18.2.2",
+    "globals": "^17.7.0",
+    "prettier": "^3.9.6"
+  }
+}
