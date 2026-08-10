@@ -2,7 +2,7 @@
    so their rules are scoped under `status-bar`. */
 status-bar {
   /* No width limit for file-info -> will get cut off if too long */
-  .inline-block.file-info {
+  .status-bar-item.file-info {
     max-width: none;
   }
 
