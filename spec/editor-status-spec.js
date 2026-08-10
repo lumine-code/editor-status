@@ -5,46 +5,42 @@ const os = require("os");
 describe("Editor Status", function () {
   let [statusBar, workspaceElement, dummyView] = [];
 
-  beforeEach(function () {
+  beforeEach(async () => {
     workspaceElement = lumine.views.getView(lumine.workspace);
     dummyView = document.createElement("div");
     statusBar = null;
 
-    waitsForPromise(() => lumine.packages.activatePackage("status-bar"));
-    waitsForPromise(() => lumine.packages.activatePackage("editor-status"));
+    await lumine.packages.activatePackage("status-bar");
+    await lumine.packages.activatePackage("editor-status");
 
-    runs(() => (statusBar = workspaceElement.querySelector("status-bar")));
+    statusBar = workspaceElement.querySelector("status-bar");
   });
 
   describe("the file info and editor position tiles", function () {
     let [editor, buffer, fileInfo, editorPosition] = [];
 
-    beforeEach(function () {
-      waitsForPromise(() => lumine.workspace.open("sample.js"));
+    beforeEach(async () => {
+      await lumine.workspace.open("sample.js");
 
-      runs(function () {
-        [fileInfo, editorPosition] = statusBar.getLeftTiles().map((tile) => tile.getItem());
-        editor = lumine.workspace.getActiveTextEditor();
-        return (buffer = editor.getBuffer());
-      });
+      [fileInfo, editorPosition] = statusBar.getLeftTiles().map((tile) => tile.getItem());
+      editor = lumine.workspace.getActiveTextEditor();
+      return (buffer = editor.getBuffer());
     });
 
     describe("when associated with an unsaved buffer", () =>
-      it("displays 'untitled' instead of the buffer's path, but still displays the buffer position", function () {
-        waitsForPromise(() => lumine.workspace.open());
+      it("displays 'untitled' instead of the buffer's path, but still displays the buffer position", async () => {
+        await lumine.workspace.open();
 
-        runs(function () {
-          lumine.views.performDocumentUpdate();
-          expect(fileInfo.currentPath.textContent).toBe("untitled");
-          expect(editorPosition.textContent).toBe("1:1");
-        });
+        lumine.views.performDocumentUpdate();
+        expect(fileInfo.currentPath.textContent).toBe("untitled");
+        expect(editorPosition.textContent).toBe("1:1");
       }));
 
     describe("when the associated editor's path changes", () =>
-      it("updates the path in the status bar", function () {
-        waitsForPromise(() => lumine.workspace.open("sample.txt"));
+      it("updates the path in the status bar", async () => {
+        await lumine.workspace.open("sample.txt");
 
-        runs(() => expect(fileInfo.currentPath.textContent).toBe("sample.txt"));
+        expect(fileInfo.currentPath.textContent).toBe("sample.txt");
       }));
 
     describe("when associated with remote file path", function () {
@@ -66,7 +62,7 @@ describe("Editor Status", function () {
       });
 
       it("calls relativize with the remote URL on shift-click", function () {
-        const spy = spyOn(lumine.project, "relativize").andReturn("remote_file.txt");
+        const spy = spyOn(lumine.project, "relativize").and.returnValue("remote_file.txt");
         const event = new MouseEvent("click", { shiftKey: true });
         fileInfo.dispatchEvent(event);
         expect(lumine.clipboard.read()).toBe("remote_file.txt");
@@ -75,103 +71,87 @@ describe("Editor Status", function () {
     });
 
     describe("when file info tile is clicked", () =>
-      it("copies the absolute path into the clipboard if available", function () {
-        waitsForPromise(() => lumine.workspace.open("sample.txt"));
+      it("copies the absolute path into the clipboard if available", async () => {
+        await lumine.workspace.open("sample.txt");
 
-        runs(function () {
-          fileInfo.click();
-          expect(lumine.clipboard.read()).toBe(fileInfo.getActiveItem().getPath());
-        });
+        fileInfo.click();
+        expect(lumine.clipboard.read()).toBe(fileInfo.getActiveItem().getPath());
       }));
 
     describe("when the file info tile is shift-clicked", () =>
-      it("copies the relative path into the clipboard if available", function () {
-        waitsForPromise(() => lumine.workspace.open("sample.txt"));
+      it("copies the relative path into the clipboard if available", async () => {
+        await lumine.workspace.open("sample.txt");
 
-        runs(function () {
-          const event = new MouseEvent("click", { shiftKey: true });
-          fileInfo.dispatchEvent(event);
-          expect(lumine.clipboard.read()).toBe("sample.txt");
-        });
+        const event = new MouseEvent("click", { shiftKey: true });
+        fileInfo.dispatchEvent(event);
+        expect(lumine.clipboard.read()).toBe("sample.txt");
       }));
 
     describe("when path of an unsaved buffer is clicked", () =>
-      it("copies the 'untitled' into clipboard", function () {
-        waitsForPromise(() => lumine.workspace.open());
+      it("copies the 'untitled' into clipboard", async () => {
+        await lumine.workspace.open();
 
-        runs(function () {
-          fileInfo.currentPath.click();
-          expect(lumine.clipboard.read()).toBe("untitled");
-        });
+        fileInfo.currentPath.click();
+        expect(lumine.clipboard.read()).toBe("untitled");
       }));
 
     describe("when buffer's path is not clicked", () =>
-      it("doesn't display a path tooltip", function () {
+      it("doesn't display a path tooltip", async () => {
         jasmine.attachToDOM(workspaceElement);
-        waitsForPromise(() => lumine.workspace.open());
+        await lumine.workspace.open();
 
-        runs(() => expect(document.querySelector(".tooltip")).not.toExist());
+        expect(document.querySelector(".tooltip")).not.toExist();
       }));
 
     describe("when buffer's path is clicked", () =>
-      it("displays path tooltip and the tooltip disappears after ~2 seconds", function () {
+      it("displays path tooltip and the tooltip disappears after ~2 seconds", async () => {
         jasmine.attachToDOM(workspaceElement);
-        waitsForPromise(() => lumine.workspace.open());
+        await lumine.workspace.open();
 
-        runs(function () {
-          fileInfo.currentPath.click();
-          expect(document.querySelector(".tooltip")).toBeVisible();
-          // extra leeway so test won't fail because tooltip disappeared few milliseconds too late
-          advanceClock(2100);
-          expect(document.querySelector(".tooltip")).not.toExist();
-        });
+        fileInfo.currentPath.click();
+        expect(document.querySelector(".tooltip")).toBeVisible();
+        // extra leeway so test won't fail because tooltip disappeared few milliseconds too late
+        advanceClock(2100);
+        expect(document.querySelector(".tooltip")).not.toExist();
       }));
 
     describe("when saved buffer's path is clicked", function () {
-      it("displays a tooltip containing text 'Copied:' and an absolute native path", function () {
+      it("displays a tooltip containing text 'Copied:' and an absolute native path", async () => {
         jasmine.attachToDOM(workspaceElement);
-        waitsForPromise(() => lumine.workspace.open("sample.txt"));
+        await lumine.workspace.open("sample.txt");
 
-        runs(function () {
-          fileInfo.currentPath.click();
-          expect(document.querySelector(".tooltip")).toHaveText(
-            `Copied: ${fileInfo.getActiveItem().getPath()}`,
-          );
-        });
+        fileInfo.currentPath.click();
+        expect(document.querySelector(".tooltip")).toHaveText(
+          `Copied: ${fileInfo.getActiveItem().getPath()}`,
+        );
       });
 
-      it("displays a tooltip containing text 'Copied:' for an absolute Unix path", function () {
+      it("displays a tooltip containing text 'Copied:' for an absolute Unix path", async () => {
         jasmine.attachToDOM(workspaceElement);
         dummyView.getPath = () => "/user/path/for/my/file.txt";
         lumine.workspace.getActivePane().activateItem(dummyView);
 
-        runs(function () {
-          fileInfo.currentPath.click();
-          expect(document.querySelector(".tooltip")).toHaveText(`Copied: ${dummyView.getPath()}`);
-        });
+        fileInfo.currentPath.click();
+        expect(document.querySelector(".tooltip")).toHaveText(`Copied: ${dummyView.getPath()}`);
       });
 
-      it("displays a tooltip containing text 'Copied:' for an absolute Windows path", function () {
+      it("displays a tooltip containing text 'Copied:' for an absolute Windows path", async () => {
         jasmine.attachToDOM(workspaceElement);
         dummyView.getPath = () => "c:\\user\\path\\for\\my\\file.txt";
         lumine.workspace.getActivePane().activateItem(dummyView);
 
-        runs(function () {
-          fileInfo.currentPath.click();
-          expect(document.querySelector(".tooltip")).toHaveText(`Copied: ${dummyView.getPath()}`);
-        });
+        fileInfo.currentPath.click();
+        expect(document.querySelector(".tooltip")).toHaveText(`Copied: ${dummyView.getPath()}`);
       });
     });
 
     describe("when unsaved buffer's path is clicked", () =>
-      it("displays a tooltip containing text 'Copied: untitled", function () {
+      it("displays a tooltip containing text 'Copied: untitled", async () => {
         jasmine.attachToDOM(workspaceElement);
-        waitsForPromise(() => lumine.workspace.open());
+        await lumine.workspace.open();
 
-        runs(function () {
-          fileInfo.currentPath.click();
-          expect(document.querySelector(".tooltip")).toHaveText("Copied: untitled");
-        });
+        fileInfo.currentPath.click();
+        expect(document.querySelector(".tooltip")).toHaveText("Copied: untitled");
       }));
 
     describe("when the associated editor's buffer's content changes", () =>
@@ -184,26 +164,21 @@ describe("Editor Status", function () {
       }));
 
     describe("when the buffer content has changed from the content on disk", function () {
-      it("disables the buffer modified indicator on save", function () {
+      it("disables the buffer modified indicator on save", async () => {
         const filePath = path.join(os.tmpdir(), "lumine-whitespace.txt");
         fs.writeFileSync(filePath, "");
 
-        waitsForPromise(() => lumine.workspace.open(filePath));
+        await lumine.workspace.open(filePath);
 
-        runs(function () {
-          editor = lumine.workspace.getActiveTextEditor();
-          expect(fileInfo.classList.contains("buffer-modified")).toBe(false);
-          editor.insertText("\n");
-          advanceClock(buffer.stoppedChangingDelay);
-          expect(fileInfo.classList.contains("buffer-modified")).toBe(true);
-        });
+        editor = lumine.workspace.getActiveTextEditor();
+        expect(fileInfo.classList.contains("buffer-modified")).toBe(false);
+        editor.insertText("\n");
+        advanceClock(buffer.stoppedChangingDelay);
+        expect(fileInfo.classList.contains("buffer-modified")).toBe(true);
 
-        waitsForPromise(() =>
-          // TODO - remove this Promise.resolve once atom/atom#14435 lands.
-          Promise.resolve(editor.getBuffer().save()),
-        );
+        await Promise.resolve(editor.getBuffer().save());
 
-        runs(() => expect(fileInfo.classList.contains("buffer-modified")).toBe(false));
+        expect(fileInfo.classList.contains("buffer-modified")).toBe(false);
       });
 
       it("disables the buffer modified indicator if the content matches again", function () {
@@ -228,30 +203,26 @@ describe("Editor Status", function () {
     });
 
     describe("when the buffer changes", function () {
-      it("updates the buffer modified indicator for the new buffer", function () {
+      it("updates the buffer modified indicator for the new buffer", async () => {
         expect(fileInfo.classList.contains("buffer-modified")).toBe(false);
 
-        waitsForPromise(() => lumine.workspace.open("sample.txt"));
+        await lumine.workspace.open("sample.txt");
 
-        runs(function () {
-          editor = lumine.workspace.getActiveTextEditor();
-          editor.insertText("\n");
-          advanceClock(buffer.stoppedChangingDelay);
-          expect(fileInfo.classList.contains("buffer-modified")).toBe(true);
-        });
+        editor = lumine.workspace.getActiveTextEditor();
+        editor.insertText("\n");
+        advanceClock(buffer.stoppedChangingDelay);
+        expect(fileInfo.classList.contains("buffer-modified")).toBe(true);
       });
 
-      it("doesn't update the buffer modified indicator for the old buffer", function () {
+      it("doesn't update the buffer modified indicator for the old buffer", async () => {
         const oldBuffer = editor.getBuffer();
         expect(fileInfo.classList.contains("buffer-modified")).toBe(false);
 
-        waitsForPromise(() => lumine.workspace.open("sample.txt"));
+        await lumine.workspace.open("sample.txt");
 
-        runs(function () {
-          oldBuffer.setText("new text");
-          advanceClock(buffer.stoppedChangingDelay);
-          expect(fileInfo.classList.contains("buffer-modified")).toBe(false);
-        });
+        oldBuffer.setText("new text");
+        advanceClock(buffer.stoppedChangingDelay);
+        expect(fileInfo.classList.contains("buffer-modified")).toBe(false);
       });
     });
 
@@ -263,20 +234,16 @@ describe("Editor Status", function () {
         expect(editorPosition.textContent).toBe("2:3");
       });
 
-      it("does not throw an exception if the cursor is moved as the result of the active pane item changing to a non-editor (regression)", function () {
-        waitsForPromise(() => Promise.resolve(lumine.packages.deactivatePackage("editor-status"))); // Wrapped so works with Promise & non-Promise deactivate
-        runs(() =>
-          lumine.workspace.onDidChangeActivePaneItem(() => editor.setCursorScreenPosition([1, 2])),
-        );
-        waitsForPromise(() => lumine.packages.activatePackage("editor-status"));
-        runs(function () {
-          editorPosition = statusBar.getLeftTiles()[1].getItem();
+      it("does not throw an exception if the cursor is moved as the result of the active pane item changing to a non-editor (regression)", async () => {
+        await Promise.resolve(lumine.packages.deactivatePackage("editor-status")); // Wrapped so works with Promise & non-Promise deactivate
+        lumine.workspace.onDidChangeActivePaneItem(() => editor.setCursorScreenPosition([1, 2]));
+        await lumine.packages.activatePackage("editor-status");
+        editorPosition = statusBar.getLeftTiles()[1].getItem();
 
-          lumine.workspace.getActivePane().activateItem(document.createElement("div"));
-          expect(editor.getCursorScreenPosition()).toEqual([1, 2]);
-          lumine.views.performDocumentUpdate();
-          expect(editorPosition).toBeHidden();
-        });
+        lumine.workspace.getActivePane().activateItem(document.createElement("div"));
+        expect(editor.getCursorScreenPosition()).toEqual([1, 2]);
+        lumine.views.performDocumentUpdate();
+        expect(editorPosition).toBeHidden();
       });
     });
 
@@ -355,28 +322,24 @@ describe("Editor Status", function () {
         expect(editorPosition.textContent).toBe("2:1-2:4 #2");
       });
 
-      it("does not throw an exception if the cursor is moved as the result of the active pane item changing to a non-editor (regression)", function () {
-        waitsForPromise(() => Promise.resolve(lumine.packages.deactivatePackage("editor-status"))); // Wrapped so works with Promise & non-Promise deactivate
-        runs(() =>
-          lumine.workspace.onDidChangeActivePaneItem(() =>
-            editor.setSelectedBufferRange([
-              [1, 2],
-              [1, 3],
-            ]),
-          ),
-        );
-        waitsForPromise(() => lumine.packages.activatePackage("editor-status"));
-        runs(function () {
-          editorPosition = statusBar.getLeftTiles()[1].getItem();
-
-          lumine.workspace.getActivePane().activateItem(document.createElement("div"));
-          expect(editor.getSelectedBufferRange()).toEqual([
+      it("does not throw an exception if the cursor is moved as the result of the active pane item changing to a non-editor (regression)", async () => {
+        await Promise.resolve(lumine.packages.deactivatePackage("editor-status")); // Wrapped so works with Promise & non-Promise deactivate
+        lumine.workspace.onDidChangeActivePaneItem(() =>
+          editor.setSelectedBufferRange([
             [1, 2],
             [1, 3],
-          ]);
-          lumine.views.performDocumentUpdate();
-          expect(editorPosition).toBeHidden();
-        });
+          ]),
+        );
+        await lumine.packages.activatePackage("editor-status");
+        editorPosition = statusBar.getLeftTiles()[1].getItem();
+
+        lumine.workspace.getActivePane().activateItem(document.createElement("div"));
+        expect(editor.getSelectedBufferRange()).toEqual([
+          [1, 2],
+          [1, 3],
+        ]);
+        lumine.views.performDocumentUpdate();
+        expect(editorPosition).toBeHidden();
       });
     });
 
