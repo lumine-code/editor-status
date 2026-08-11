@@ -32,7 +32,7 @@ describe("Editor Status", function () {
         await lumine.workspace.open();
 
         lumine.views.performDocumentUpdate();
-        expect(fileInfo.currentPath.textContent).toBe("untitled");
+        expect(fileInfo.textContent).toBe("untitled");
         expect(editorPosition.textContent).toBe("1:1");
       }));
 
@@ -40,7 +40,7 @@ describe("Editor Status", function () {
       it("updates the path in the status bar", async () => {
         await lumine.workspace.open("sample.txt");
 
-        expect(fileInfo.currentPath.textContent).toBe("sample.txt");
+        expect(fileInfo.textContent).toBe("sample.txt");
       }));
 
     describe("when associated with remote file path", function () {
@@ -52,12 +52,12 @@ describe("Editor Status", function () {
 
       it("updates the path in the status bar", function () {
         // The remote path isn't relativized in the test because no remote directory provider is registered.
-        expect(fileInfo.currentPath.textContent).toBe("remote://server:123/folder/remote_file.txt");
-        expect(fileInfo.currentPath).toBeVisible();
+        expect(fileInfo.textContent).toBe("remote://server:123/folder/remote_file.txt");
+        expect(fileInfo).toBeVisible();
       });
 
       it("when the path is clicked", function () {
-        fileInfo.currentPath.click();
+        fileInfo.click();
         expect(lumine.clipboard.read()).toBe("/folder/remote_file.txt");
       });
 
@@ -91,7 +91,7 @@ describe("Editor Status", function () {
       it("copies the 'untitled' into clipboard", async () => {
         await lumine.workspace.open();
 
-        fileInfo.currentPath.click();
+        fileInfo.click();
         expect(lumine.clipboard.read()).toBe("untitled");
       }));
 
@@ -108,7 +108,7 @@ describe("Editor Status", function () {
         jasmine.attachToDOM(workspaceElement);
         await lumine.workspace.open();
 
-        fileInfo.currentPath.click();
+        fileInfo.click();
         expect(document.querySelector(".tooltip")).toBeVisible();
         // extra leeway so test won't fail because tooltip disappeared few milliseconds too late
         advanceClock(2100);
@@ -120,7 +120,7 @@ describe("Editor Status", function () {
         jasmine.attachToDOM(workspaceElement);
         await lumine.workspace.open("sample.txt");
 
-        fileInfo.currentPath.click();
+        fileInfo.click();
         expect(document.querySelector(".tooltip")).toHaveText(
           `Copied: ${fileInfo.getActiveItem().getPath()}`,
         );
@@ -131,7 +131,7 @@ describe("Editor Status", function () {
         dummyView.getPath = () => "/user/path/for/my/file.txt";
         lumine.workspace.getActivePane().activateItem(dummyView);
 
-        fileInfo.currentPath.click();
+        fileInfo.click();
         expect(document.querySelector(".tooltip")).toHaveText(`Copied: ${dummyView.getPath()}`);
       });
 
@@ -140,7 +140,7 @@ describe("Editor Status", function () {
         dummyView.getPath = () => "c:\\user\\path\\for\\my\\file.txt";
         lumine.workspace.getActivePane().activateItem(dummyView);
 
-        fileInfo.currentPath.click();
+        fileInfo.click();
         expect(document.querySelector(".tooltip")).toHaveText(`Copied: ${dummyView.getPath()}`);
       });
     });
@@ -150,7 +150,7 @@ describe("Editor Status", function () {
         jasmine.attachToDOM(workspaceElement);
         await lumine.workspace.open();
 
-        fileInfo.currentPath.click();
+        fileInfo.click();
         expect(document.querySelector(".tooltip")).toHaveText("Copied: untitled");
       }));
 
@@ -356,15 +356,15 @@ describe("Editor Status", function () {
         jasmine.attachToDOM(workspaceElement);
         dummyView.getTitle = () => "View Title";
         lumine.workspace.getActivePane().activateItem(dummyView);
-        expect(fileInfo.currentPath.textContent).toBe("View Title");
-        expect(fileInfo.currentPath).toBeVisible();
+        expect(fileInfo.textContent).toBe("View Title");
+        expect(fileInfo).toBeVisible();
       }));
 
     describe("when the active pane item neither getTitle() nor getPath()", () =>
       it("hides the path view", function () {
         jasmine.attachToDOM(workspaceElement);
         lumine.workspace.getActivePane().activateItem(dummyView);
-        expect(fileInfo.currentPath).toBeHidden();
+        expect(fileInfo).toBeHidden();
       }));
 
     describe("when the active pane item's title changes", () =>
@@ -379,12 +379,12 @@ describe("Editor Status", function () {
         };
         dummyView.getTitle = () => "View Title";
         lumine.workspace.getActivePane().activateItem(dummyView);
-        expect(fileInfo.currentPath.textContent).toBe("View Title");
+        expect(fileInfo.textContent).toBe("View Title");
         dummyView.getTitle = () => "New Title";
         for (let callback of Array.from(callbacks)) {
           callback();
         }
-        expect(fileInfo.currentPath.textContent).toBe("New Title");
+        expect(fileInfo.textContent).toBe("New Title");
       }));
 
     describe("the editor position tile", function () {

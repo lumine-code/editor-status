@@ -9,13 +9,4 @@ status-bar {
   .file-info.buffer-modified::after {
     content: "*";
   }
-
-  .current-path:empty {
-    display: none;
-  }
-
-  .editor-position a,
-  .editor-position a:hover {
-    color: var(--text-color);
-  }
 }
