@@ -11,7 +11,7 @@ Show the active file path, cursor position, and selection range in the status ba
 
 ## Installation
 
-To install `editor-status` search for _editor-status_ in the Install pane of the Lumine settings or run `lumine --install lumine-code/editor-status`.
+To install `editor-status` search for it in the Install pane of the Lumine settings, or run the command `lumine --install lumine-code/editor-status`.
 
 ## Configuration
 
@@ -43,7 +43,7 @@ status-bar .editor-position {
 
 ## Services
 
-- **status-bar** (`^1.0.0`): consumed to add the file-info and editor-position tiles to the left side of the status bar.
+- `status-bar`: consumed to add the file-info and editor-position tiles to the left side of the status bar.
 
 ## Contributing
 
