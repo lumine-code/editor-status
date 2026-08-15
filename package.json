@@ -61,14 +61,14 @@
   },
   "dependencies": {
     "@lumine-code/fs-plus": "github:lumine-code/fs-plus#955beb5f6fc2bf10f3782dd0940c0a201cdefa5e",
-    "liquidjs": "^10.28.0"
+    "liquidjs": "^10.29.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "eslint": "^10.8.0",
+    "eslint": "^10.8.1",
     "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-n": "^18.2.2",
-    "globals": "^17.9.0",
+    "eslint-plugin-n": "^18.3.0",
+    "globals": "^17.11.0",
     "prettier": "^3.9.6"
   }
 }
