@@ -29,6 +29,12 @@
     "You can copy the active item's path by clicking it in the status bar, or shift-click to copy it relative to the project.",
     "You can open the go to line dialog by clicking the cursor position in the status bar."
   ],
+  "scripts": {
+    "test": "lumine --test spec",
+    "lint": "eslint . --max-warnings 0",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
   "configSchema": {
     "showFileInfo": {
       "title": "Show File Info",
