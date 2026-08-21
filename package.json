@@ -1,18 +1,19 @@
 {
-  "name": "editor-status",
+  "name": "item-status",
   "author": "lumine-code",
   "version": "1.0.0",
-  "description": "Show the active file path, cursor position, and selection range in the status bar.",
+  "description": "Show the active pane item's path and the cursor position in the status bar.",
   "keywords": [
     "cursor",
     "position",
+    "selection",
     "filepath",
-    "indicator",
-    "path"
+    "path",
+    "indicator"
   ],
-  "repository": "https://github.com/lumine-code/editor-status",
+  "repository": "https://github.com/lumine-code/item-status",
   "bugs": {
-    "url": "https://github.com/lumine-code/editor-status/issues"
+    "url": "https://github.com/lumine-code/item-status/issues"
   },
   "license": "MIT",
   "main": "./lib/main",
@@ -24,24 +25,33 @@
   "engines": {
     "lumine": "^1.0.0"
   },
-  "scripts": {
-    "test": "lumine --test spec",
-    "lint": "eslint . --max-warnings 0",
-    "format": "prettier --write .",
-    "format:check": "prettier --check ."
-  },
+  "backgroundTips": [
+    "You can copy the active item's path by clicking it in the status bar, or shift-click to copy it relative to the project.",
+    "You can open the go to line dialog by clicking the cursor position in the status bar."
+  ],
   "configSchema": {
+    "showFileInfo": {
+      "title": "Show File Info",
+      "description": "Show the tile with the active pane item's path, or its title when it has no path.",
+      "type": "boolean",
+      "default": true
+    },
+    "showEditorPosition": {
+      "title": "Show Editor Position",
+      "description": "Show the tile with the cursor position of the active text editor.",
+      "type": "boolean",
+      "default": true
+    },
     "template": {
       "title": "Template",
-      "description": "Select the information shown in the editor status tile. Choose `Custom` to use the template below, or `Hide` to hide the tile.",
+      "description": "Select the information shown in the editor position tile. Choose `Custom` to use the template below.",
       "type": "string",
       "enum": [
         "Row and Column",
         "Row and Column, Lines and Chars",
         "With Selection",
         "With Selection and Cursors",
-        "Custom",
-        "Hide"
+        "Custom"
       ],
       "default": "Row and Column, Lines and Chars"
     },

@@ -2,7 +2,7 @@ const fs = require("@lumine-code/fs-plus");
 const path = require("path");
 const os = require("os");
 
-describe("Editor Status", function () {
+describe("Item Status", function () {
   let [statusBar, workspaceElement, dummyView] = [];
 
   beforeEach(async () => {
@@ -11,7 +11,7 @@ describe("Editor Status", function () {
     statusBar = null;
 
     await lumine.packages.activatePackage("status-bar");
-    await lumine.packages.activatePackage("editor-status");
+    await lumine.packages.activatePackage("item-status");
 
     statusBar = workspaceElement.querySelector("status-bar");
   });
@@ -235,9 +235,9 @@ describe("Editor Status", function () {
       });
 
       it("does not throw an exception if the cursor is moved as the result of the active pane item changing to a non-editor (regression)", async () => {
-        await Promise.resolve(lumine.packages.deactivatePackage("editor-status")); // Wrapped so works with Promise & non-Promise deactivate
+        await Promise.resolve(lumine.packages.deactivatePackage("item-status")); // Wrapped so works with Promise & non-Promise deactivate
         lumine.workspace.onDidChangeActivePaneItem(() => editor.setCursorScreenPosition([1, 2]));
-        await lumine.packages.activatePackage("editor-status");
+        await lumine.packages.activatePackage("item-status");
         editorPosition = statusBar.getLeftTiles()[1].getItem();
 
         lumine.workspace.getActivePane().activateItem(document.createElement("div"));
@@ -248,7 +248,7 @@ describe("Editor Status", function () {
     });
 
     describe("when the associated editor's selection changes", function () {
-      beforeEach(() => lumine.config.set("editor-status.template", "With Selection and Cursors"));
+      beforeEach(() => lumine.config.set("item-status.template", "With Selection and Cursors"));
 
       it("shows the selection range in the status bar", function () {
         jasmine.attachToDOM(workspaceElement);
@@ -323,14 +323,14 @@ describe("Editor Status", function () {
       });
 
       it("does not throw an exception if the cursor is moved as the result of the active pane item changing to a non-editor (regression)", async () => {
-        await Promise.resolve(lumine.packages.deactivatePackage("editor-status")); // Wrapped so works with Promise & non-Promise deactivate
+        await Promise.resolve(lumine.packages.deactivatePackage("item-status")); // Wrapped so works with Promise & non-Promise deactivate
         lumine.workspace.onDidChangeActivePaneItem(() =>
           editor.setSelectedBufferRange([
             [1, 2],
             [1, 3],
           ]),
         );
-        await lumine.packages.activatePackage("editor-status");
+        await lumine.packages.activatePackage("item-status");
         editorPosition = statusBar.getLeftTiles()[1].getItem();
 
         lumine.workspace.getActivePane().activateItem(document.createElement("div"));
@@ -389,7 +389,7 @@ describe("Editor Status", function () {
 
     describe("the editor position tile", function () {
       it("renders the selected preset without a selection", function () {
-        lumine.config.set("editor-status.template", "Row and Column");
+        lumine.config.set("item-status.template", "Row and Column");
         jasmine.attachToDOM(workspaceElement);
         editor.setCursorScreenPosition([1, 2]);
         lumine.views.performDocumentUpdate();
@@ -397,7 +397,7 @@ describe("Editor Status", function () {
       });
 
       it("shows the cursor (end) and omits the range for the 'Row and Column' preset", function () {
-        lumine.config.set("editor-status.template", "Row and Column");
+        lumine.config.set("item-status.template", "Row and Column");
         jasmine.attachToDOM(workspaceElement);
         editor.setSelectedBufferRange([
           [0, 0],
@@ -408,7 +408,7 @@ describe("Editor Status", function () {
       });
 
       it("shows the cursor and selection size for the 'Row and Column, Lines and Chars' preset", function () {
-        lumine.config.set("editor-status.template", "Row and Column, Lines and Chars");
+        lumine.config.set("item-status.template", "Row and Column, Lines and Chars");
         jasmine.attachToDOM(workspaceElement);
 
         editor.setCursorScreenPosition([1, 2]);
@@ -429,7 +429,7 @@ describe("Editor Status", function () {
       });
 
       it("shows the range for the 'With Selection' preset", function () {
-        lumine.config.set("editor-status.template", "With Selection");
+        lumine.config.set("item-status.template", "With Selection");
         jasmine.attachToDOM(workspaceElement);
         editor.setSelectedBufferRange([
           [0, 0],
@@ -440,8 +440,8 @@ describe("Editor Status", function () {
       });
 
       it("respects a custom template", function () {
-        lumine.config.set("editor-status.template", "Custom");
-        lumine.config.set("editor-status.custom", "{{ lines }} lines, {{ chars }} chars");
+        lumine.config.set("item-status.template", "Custom");
+        lumine.config.set("item-status.custom", "{{ lines }} lines, {{ chars }} chars");
         jasmine.attachToDOM(workspaceElement);
         editor.setSelectedBufferRange([
           [0, 0],
@@ -452,22 +452,22 @@ describe("Editor Status", function () {
       });
 
       it("updates when the custom template changes", function () {
-        lumine.config.set("editor-status.template", "Custom");
-        lumine.config.set("editor-status.custom", "L{{ start.row }}");
+        lumine.config.set("item-status.template", "Custom");
+        lumine.config.set("item-status.custom", "L{{ start.row }}");
         jasmine.attachToDOM(workspaceElement);
         editor.setCursorScreenPosition([1, 2]);
         lumine.views.performDocumentUpdate();
         expect(editorPosition.textContent).toBe("L2");
 
-        lumine.config.set("editor-status.custom", "C{{ start.col }}");
+        lumine.config.set("item-status.custom", "C{{ start.col }}");
         lumine.views.performDocumentUpdate();
         expect(editorPosition.textContent).toBe("C3");
       });
 
       it("supports conditional cursor-count sections in a custom template", function () {
-        lumine.config.set("editor-status.template", "Custom");
+        lumine.config.set("item-status.template", "Custom");
         lumine.config.set(
-          "editor-status.custom",
+          "item-status.custom",
           "{{ start.row }}{% if n > 1 %} ({{ n }}){% endif %}",
         );
         jasmine.attachToDOM(workspaceElement);
@@ -481,17 +481,9 @@ describe("Editor Status", function () {
         expect(editorPosition.textContent).toBe("2 (2)");
       });
 
-      it("hides the tile for the 'Hide' preset", function () {
-        lumine.config.set("editor-status.template", "Hide");
-        jasmine.attachToDOM(workspaceElement);
-        editor.setCursorScreenPosition([1, 2]);
-        lumine.views.performDocumentUpdate();
-        expect(editorPosition).toBeHidden();
-      });
-
       it("hides the tile when the template renders empty", function () {
-        lumine.config.set("editor-status.template", "Custom");
-        lumine.config.set("editor-status.custom", "{% if chars %}{{ chars }}{% endif %}");
+        lumine.config.set("item-status.template", "Custom");
+        lumine.config.set("item-status.custom", "{% if chars %}{{ chars }}{% endif %}");
         jasmine.attachToDOM(workspaceElement);
         editor.setCursorBufferPosition([0, 0]);
         lumine.views.performDocumentUpdate();
@@ -505,6 +497,67 @@ describe("Editor Status", function () {
           editorPosition.click();
           expect(eventHandler).toHaveBeenCalled();
         }));
+    });
+  });
+
+  describe("the tile visibility settings", function () {
+    // The stamped `status-bar-item` class is on every hosted element, so a tile
+    // is identified by the class its own view adds.
+    const tileNames = () =>
+      statusBar
+        .getLeftTiles()
+        .map((tile) =>
+          tile.getItem().classList.contains("file-info") ? "file-info" : "editor-position",
+        );
+
+    beforeEach(async () => {
+      await lumine.workspace.open("sample.js");
+    });
+
+    it("shows both tiles by default", function () {
+      expect(tileNames()).toEqual(["file-info", "editor-position"]);
+    });
+
+    it("removes the file info tile when it is turned off", function () {
+      lumine.config.set("item-status.showFileInfo", false);
+      expect(tileNames()).toEqual(["editor-position"]);
+    });
+
+    it("removes the editor position tile when it is turned off", function () {
+      lumine.config.set("item-status.showEditorPosition", false);
+      expect(tileNames()).toEqual(["file-info"]);
+    });
+
+    it("removes both tiles when both are turned off", function () {
+      lumine.config.set("item-status.showFileInfo", false);
+      lumine.config.set("item-status.showEditorPosition", false);
+      expect(tileNames()).toEqual([]);
+    });
+
+    it("returns a tile to its own place when it is turned back on", function () {
+      lumine.config.set("item-status.showFileInfo", false);
+      expect(tileNames()).toEqual(["editor-position"]);
+
+      lumine.config.set("item-status.showFileInfo", true);
+      expect(tileNames()).toEqual(["file-info", "editor-position"]);
+    });
+
+    it("keeps a tile that was turned back on up to date", async () => {
+      lumine.config.set("item-status.showFileInfo", false);
+      lumine.config.set("item-status.showFileInfo", true);
+
+      await lumine.workspace.open("sample.txt");
+
+      const [fileInfo] = statusBar.getLeftTiles().map((tile) => tile.getItem());
+      expect(fileInfo.textContent).toBe("sample.txt");
+    });
+
+    it("does not leave the element behind when a tile is turned off", function () {
+      lumine.config.set("item-status.showEditorPosition", false);
+      expect(statusBar.querySelector(".editor-position")).toBeNull();
+
+      lumine.config.set("item-status.showEditorPosition", true);
+      expect(statusBar.querySelector(".editor-position")).not.toBeNull();
     });
   });
 });
